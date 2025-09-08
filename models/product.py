@@ -1,22 +1,20 @@
 from extensions import db
 
-class Cart(db.Model):
-    __tablename__ = "cart"
+class Product(db.Model):
+    __tablename__ = "products"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    product_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(150), nullable=False)
     poster = db.Column(db.String(300))
     price = db.Column(db.Numeric, nullable=False)
+    category = db.Column(db.String(100))
     quantity = db.Column(db.String(50))
 
     def to_dict(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
-            "product_id": self.product_id,
             "name": self.name,
             "poster": self.poster,
-            "price": self.price,
+            "price": self.price,  
+            "category": self.category,
             "quantity": self.quantity
         }

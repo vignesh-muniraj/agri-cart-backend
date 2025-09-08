@@ -4,6 +4,7 @@ from flask_cors import CORS
 from extensions import db, jwt
 from routes.signup_bp import signup_bp
 from routes.users_bp import users_bp
+from routes.products_bp import products_bp
 # from routes.cart_bp import cart_bp
 from os import environ
 
@@ -21,6 +22,7 @@ def hello_world():
 
 app.register_blueprint(signup_bp, url_prefix="/users")
 app.register_blueprint(users_bp, url_prefix="/users")
+app.register_blueprint(products_bp)
 # app.register_blueprint(cart_bp, url_prefix="/api")
 
 
