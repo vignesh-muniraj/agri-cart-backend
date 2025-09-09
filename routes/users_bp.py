@@ -11,6 +11,7 @@ users_bp = Blueprint("users_bp", __name__)
 @users_bp.post("/login")
 def login_user():
     data = request.get_json()
+    id = data.get("id")
     username = data.get("username")
     password = data.get("password")
 
@@ -25,4 +26,4 @@ def login_user():
         return {"error": "Invalid username or password"}, 401
 
     token = create_access_token(identity=username)
-    return {"message": "Login Successful", "token": token}
+    return {"message": "Login Successful", "token": token,"username":db_user.username,"id":db_user.id}
