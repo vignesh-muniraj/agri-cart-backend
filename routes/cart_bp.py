@@ -1,8 +1,10 @@
 from flask import Blueprint, request
 from extensions import db
 from models.cart import Cart
+from models.product import Product
 
 cart_bp = Blueprint("cart_bp", __name__)
+
 
 # ✅ GET all cart items for a user
 @cart_bp.get("/cart/<int:user_id>")
@@ -18,15 +20,32 @@ def add_to_cart():
     if not data:
         return {"error": "No input data provided"}, 400
 
+    user_id = data.get("user_id")
+    product_id = data.get("product_id")
+    quantity = data.get("quantity", "500g")
+
+    # ✅ Get the product to fetch price
+    product = Product.query.get(product_id)
+    if not product:
+        return {"error": "Product not found"}, 404
+
+    # ✅ Check if already in cart (same user + same product + same quantity)
+    existing_cart = Cart.query.filter_by(
+        user_id=user_id,
+        product_id=product_id,
+        quantity=quantity
+    ).first()
+
+    if existing_cart:
+        return {"message": f"{product.name} is already in your cart"}, 200
+
     try:
         cart_item = Cart(
-            user_id=data.get("user_id"),
-            product_id=data.get("product_id"),
-            # name=data.get("name"),
-            # poster=data.get("poster"),
-            price=data.get("price"),
-            quantity=data.get("quantity"),
-            count=data.get("count", 1),  # default count = 1
+            user_id=user_id,
+            product_id=product.id,
+            price=product.price,   # ✅ take from product table
+            quantity=quantity,
+            count=data.get("count", 1),
         )
         db.session.add(cart_item)
         db.session.commit()
@@ -37,7 +56,8 @@ def add_to_cart():
         return {"error": str(e)}, 500
 
 
-# ✅ PUT update cart item count (increase/decrease)
+
+# ✅ PUT update cart item count
 @cart_bp.put("/cart/<int:cart_id>")
 def update_cart(cart_id):
     data = request.get_json()

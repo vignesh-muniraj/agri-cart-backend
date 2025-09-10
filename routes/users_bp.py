@@ -14,6 +14,7 @@ def login_user():
     id = data.get("id")
     username = data.get("username")
     password = data.get("password")
+    role = data.get("role")
 
     if not username or not password:
         return {"error": "Username and password required"}, 400
@@ -26,4 +27,9 @@ def login_user():
         return {"error": "Invalid username or password"}, 401
 
     token = create_access_token(identity=username)
-    return {"message": "Login Successful", "token": token,"username":db_user.username,"id":db_user.id}
+    # return {"message": "Login Successful", "token": token,"username":db_user.username,"id":db_user.id}
+    return {
+        "message": "Login Successful",
+        "token": token,
+        "user": db_user.to_dict()
+    }
