@@ -11,7 +11,8 @@ from os import environ
 
 app = Flask(__name__)
 app.config.from_object("config.Config")
-CORS(app)
+# CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 db.init_app(app)
 jwt.init_app(app)
