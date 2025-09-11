@@ -5,7 +5,6 @@ from models.product import Product
 
 cart_bp = Blueprint("cart_bp", __name__)
 
-
 # ✅ GET all cart items for a user
 @cart_bp.get("/cart/<int:user_id>")
 def get_cart(user_id):
@@ -22,29 +21,26 @@ def add_to_cart():
 
     user_id = data.get("user_id")
     product_id = data.get("product_id")
-    quantity = data.get("quantity", "500g")
 
-    # ✅ Get the product to fetch price
     product = Product.query.get(product_id)
     if not product:
         return {"error": "Product not found"}, 404
 
-    # ✅ Check if already in cart (same user + same product + same quantity)
+    # ✅ Check if already in cart
     existing_cart = Cart.query.filter_by(
-        user_id=user_id,
-        product_id=product_id,
-        quantity=quantity
+        user_id=user_id, product_id=product_id
     ).first()
 
     if existing_cart:
-        return {"message": f"{product.name} is already in your cart"}, 200
+        # instead of blocking, you could auto-increment count
+        existing_cart.count += data.get("count", 1)
+        db.session.commit()
+        return existing_cart.to_dict(), 200
 
     try:
         cart_item = Cart(
             user_id=user_id,
             product_id=product.id,
-            price=product.price,   # ✅ take from product table
-            quantity=quantity,
             count=data.get("count", 1),
         )
         db.session.add(cart_item)
@@ -54,7 +50,6 @@ def add_to_cart():
     except Exception as e:
         db.session.rollback()
         return {"error": str(e)}, 500
-
 
 
 # ✅ PUT update cart item count

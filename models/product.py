@@ -1,3 +1,4 @@
+# models/product.py
 from extensions import db
 
 class Product(db.Model):
@@ -9,14 +10,17 @@ class Product(db.Model):
     price = db.Column(db.Numeric, nullable=False)
     category = db.Column(db.String(100))
     quantity = db.Column(db.String(50))
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    carts = db.relationship("Cart", back_populates="product", cascade="all, delete-orphan")
+
 
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "poster": self.poster,
-            "price": self.price,
+            "price": str(self.price),
             "category": self.category,
             "quantity": self.quantity,
             "user_id": self.user_id,
