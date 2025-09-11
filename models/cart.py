@@ -1,7 +1,5 @@
-# from extensions import db
 
 from extensions import db
-# from models.product import Product
 
 
 class Cart(db.Model):
