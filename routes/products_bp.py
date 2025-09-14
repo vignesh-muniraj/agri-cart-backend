@@ -39,7 +39,6 @@ def add_product():
         return new_product.to_dict(), 201
     except Exception as e:
         return {"error": str(e)}, 400
-    
 
 
 # /user dashboard
@@ -67,9 +66,29 @@ def update_product(id):
     product.price = data.get("price", product.price)
     product.category = data.get("category", product.category)
     product.quantity = data.get("quantity", product.quantity)
+    # product.status = data.get("status", product.status)
 
     db.session.commit()
     return product.to_dict(), 200
+
+
+# active or inactive
+@products_bp.route("/products/<int:id>", methods=["PUT"])
+def toggle_product_status(id):
+    product = Product.query.get(id)
+    if not product:
+        return {"error": "Product not found"}, 404
+
+    data = request.get_json()
+    new_status = data.get("status")
+    if new_status not in ["active", "inactive"]:
+        return {"error": "Invalid status"}, 400
+
+    # Update status
+    product.status = new_status
+    db.session.commit()
+
+    return {"message": f"Product status updated to {new_status}"}, 200
 
 
 # DELETE product
@@ -83,4 +102,3 @@ def delete_product(id):
     db.session.delete(product)
     db.session.commit()
     return {"message": "Product deleted successfully"}, 200
-
