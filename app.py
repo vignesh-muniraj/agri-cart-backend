@@ -8,6 +8,8 @@ from routes.products_bp import products_bp
 from routes.cart_bp  import cart_bp 
 from routes.orders_bp  import orders_bp 
 # from routes.cart_bp import cart_bp
+from routes.Admin_bp import admin_bp
+
 from os import environ
 
 app = Flask(__name__)
@@ -28,6 +30,7 @@ app.register_blueprint(users_bp, url_prefix="/users")
 app.register_blueprint(products_bp)
 app.register_blueprint(cart_bp )
 app.register_blueprint(orders_bp)
+app.register_blueprint(admin_bp,url_prefix="/admin")
 # app.register_blueprint(cart_bp, url_prefix="/api")
 
 
