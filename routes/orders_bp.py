@@ -104,7 +104,7 @@ from models.order import Order, OrderItem
 orders_bp = Blueprint("orders_bp", __name__)
 
 
-# ✅ Place order (checkout)
+#  Place order (checkout)
 @orders_bp.post("/orders/<int:user_id>")
 def place_order(user_id):
     cart_items = Cart.query.filter_by(user_id=user_id).all()
@@ -151,28 +151,28 @@ def place_order(user_id):
         return {"error": str(e)}, 500
 
 
-# ✅ Buyer: get all orders for a user
+#  Buyer: get all orders for a user
 @orders_bp.get("/orders/<int:user_id>")
 def get_orders_for_user(user_id):
     orders = Order.query.filter_by(user_id=user_id).order_by(Order.created_at.desc()).all()
     return [o.to_dict() for o in orders], 200
 
 
-# ✅ Seller: get all orders for a product
+#  Seller: get all orders for a product
 @orders_bp.get("/orders/product/<int:product_id>")
 def get_orders_for_product(product_id):
     orders = Order.query.join(OrderItem).filter(OrderItem.product_id == product_id).all()
     return [o.to_dict() for o in orders], 200
 
 
-# ✅ Admin: get all orders
+#  Admin: get all orders
 @orders_bp.get("/admin/orders")
 def get_all_orders():
     orders = Order.query.order_by(Order.created_at.desc()).all()
     return [o.to_dict() for o in orders], 200
 
 
-# ✅ Update order status
+#  Update order status
 @orders_bp.put("/orders/<int:order_id>")
 def update_order_status(order_id):
     data = request.get_json()
