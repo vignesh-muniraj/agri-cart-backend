@@ -37,7 +37,8 @@ class Product(db.Model):
     category = db.Column(db.String(100))
     quantity = db.Column(db.String(50))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    status =  db.Column(db.String(50))
+    status = db.Column(db.String(20), default="active")
+
     carts = db.relationship("Cart", back_populates="product", cascade="all, delete-orphan")
 
     def to_dict(self):

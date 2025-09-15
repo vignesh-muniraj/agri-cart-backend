@@ -73,7 +73,24 @@ def update_product(id):
 
 
 # active or inactive
-@products_bp.route("/products/<int:id>", methods=["PUT"])
+# @products_bp.route("/products/<int:id>", methods=["PUT"])
+# def toggle_product_status(id):
+#     product = Product.query.get(id)
+#     if not product:
+#         return {"error": "Product not found"}, 404
+
+#     data = request.get_json()
+#     new_status = data.get("status")
+#     if new_status not in ["active", "inactive"]:
+#         return {"error": "Invalid status"}, 400
+
+#     # Update status
+#     product.status = new_status
+#     db.session.commit()
+
+#     return {"message": f"Product status updated to {new_status}"}, 200
+
+@products_bp.put("/products/<int:id>/status")
 def toggle_product_status(id):
     product = Product.query.get(id)
     if not product:
@@ -84,11 +101,11 @@ def toggle_product_status(id):
     if new_status not in ["active", "inactive"]:
         return {"error": "Invalid status"}, 400
 
-    # Update status
     product.status = new_status
     db.session.commit()
+    return {"message": f"Product status updated to {new_status}", "status": product.status}, 200
 
-    return {"message": f"Product status updated to {new_status}"}, 200
+
 
 
 # DELETE product
