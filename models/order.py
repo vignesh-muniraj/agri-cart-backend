@@ -25,7 +25,6 @@ from datetime import datetime
 #         }
 
 
-
 # class Order(db.Model):
 #     __tablename__ = "orders"
 #     id = db.Column(db.Integer, primary_key=True)
@@ -94,7 +93,9 @@ from datetime import datetime
 class Order(db.Model):
     __tablename__ = "orders"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
     total_price = db.Column(db.Numeric, nullable=False)
     status = db.Column(db.String(50), default="pending")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -109,6 +110,7 @@ class Order(db.Model):
     state = db.Column(db.String(50), nullable=False)
     landmark = db.Column(db.String(200), nullable=True)
     altphone = db.Column(db.String(15), nullable=True)
+    delivery_date = db.Column(db.DateTime, nullable=True)
 
     items = db.relationship("OrderItem", backref="order", cascade="all, delete-orphan")
     user = db.relationship("User", backref="orders")
@@ -129,13 +131,19 @@ class Order(db.Model):
             "state": self.state,
             "landmark": self.landmark,
             "altphone": self.altphone,
-            "items": [item.to_dict() for item in self.items]
+            "items": [item.to_dict() for item in self.items],
+            "delivery_date": self.delivery_date.isoformat()
+            if self.delivery_date
+            else None,
         }
+
 
 class OrderItem(db.Model):
     __tablename__ = "order_items"
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
+    order_id = db.Column(
+        db.Integer, db.ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+    )
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     quantity = db.Column(db.Integer, default=1)
     price = db.Column(db.Numeric, nullable=False)  # snapshot price
@@ -147,8 +155,9 @@ class OrderItem(db.Model):
             "id": self.id,
             "product_id": self.product_id,
             "product_name": self.product.name if self.product else None,
-            "poster": self.product.poster if self.product else None,  # ✅ include poster
+            "poster": self.product.poster
+            if self.product
+            else None,  # ✅ include poster
             "quantity": self.quantity,
             "price": str(self.price),
         }
-
