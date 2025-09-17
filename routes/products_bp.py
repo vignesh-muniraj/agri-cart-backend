@@ -1,6 +1,8 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from extensions import db
 from models.product import Product
+from sqlalchemy import or_
+
 
 products_bp = Blueprint("products_bp", __name__)
 
@@ -10,6 +12,17 @@ products_bp = Blueprint("products_bp", __name__)
 def get_products():
     products = [p.to_dict() for p in Product.query.all()]
     return products, 200
+
+# 🔎 Search products by name or descriptio
+@products_bp.get("/products/search")
+def search_products():
+    q = request.args.get("q", "").strip()
+    if not q:
+        return {"products": []}, 200
+
+    products = Product.query.filter(Product.name.ilike(f"%{q}%")).all()
+
+    return {"products": [p.to_dict() for p in products]}, 200
 
 
 # GET single product by id
@@ -72,23 +85,6 @@ def update_product(id):
     return product.to_dict(), 200
 
 
-# active or inactive
-# @products_bp.route("/products/<int:id>", methods=["PUT"])
-# def toggle_product_status(id):
-#     product = Product.query.get(id)
-#     if not product:
-#         return {"error": "Product not found"}, 404
-
-#     data = request.get_json()
-#     new_status = data.get("status")
-#     if new_status not in ["active", "inactive"]:
-#         return {"error": "Invalid status"}, 400
-
-#     # Update status
-#     product.status = new_status
-#     db.session.commit()
-
-#     return {"message": f"Product status updated to {new_status}"}, 200
 
 @products_bp.put("/products/<int:id>/status")
 def toggle_product_status(id):
@@ -103,9 +99,10 @@ def toggle_product_status(id):
 
     product.status = new_status
     db.session.commit()
-    return {"message": f"Product status updated to {new_status}", "status": product.status}, 200
-
-
+    return {
+        "message": f"Product status updated to {new_status}",
+        "status": product.status,
+    }, 200
 
 
 # DELETE product
@@ -119,3 +116,29 @@ def delete_product(id):
     db.session.delete(product)
     db.session.commit()
     return {"message": "Product deleted successfully"}, 200
+
+
+# 🔎 Search products by name or description
+# @products_bp.route("/products/search")
+# def search_products():
+#     query = request.args.get("q", "").strip()
+
+#     if not query:
+#         return jsonify({"products": []}), 200
+
+#     try:
+#         results = Product.query.filter(Product.name.ilike(f"%{query}%")).all()
+#         products = [
+#             {
+#                 "id": p.id,
+#                 "name": p.name,
+#                 "price": str(p.price),
+#                 "image": getattr(p, "poster", None),
+#             }
+#             for p in results
+#         ]
+#         return jsonify({"products": products}), 200
+
+#     except Exception as e:
+#         print("Search error:", e)
+#         return jsonify({"error": str(e)}), 500

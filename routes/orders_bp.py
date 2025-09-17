@@ -17,43 +17,60 @@ def place_order(user_id):
         return {"error": "Cart is empty"}, 400
 
     data = request.get_json()
-    total_price = sum(item.product.price * item.count for item in cart_items)
+
+    # 1. Group cart items by seller
+    items_by_seller = {}
+    for item in cart_items:
+        seller_id = item.product.user_id
+        if seller_id not in items_by_seller:
+            items_by_seller[seller_id] = []
+        items_by_seller[seller_id].append(item)
+
+    created_orders = []
 
     try:
-        order = Order(
-            user_id=user_id,
-            total_price=total_price,
-            name=data.get("name"),
-            phone=data.get("phone"),
-            pincode=data.get("pincode"),
-            locality=data.get("locality"),
-            address=data.get("address"),
-            city=data.get("city"),
-            state=data.get("state"),
-            landmark=data.get("landmark"),
-            altphone=data.get("altphone"),
-        )
-        db.session.add(order)
-        db.session.commit()
+        # 2. Create one order per seller
+        for seller_id, items in items_by_seller.items():
+            total_price = sum(item.product.price * item.count for item in items)
 
-        # add order items
-        for item in cart_items:
-            order_item = OrderItem(
-                order_id=order.id,
-                product_id=item.product_id,
-                quantity=item.count,
-                price=item.product.price,
+            order = Order(
+                user_id=user_id,
+                total_price=total_price,
+                name=data.get("name"),
+                phone=data.get("phone"),
+                pincode=data.get("pincode"),
+                locality=data.get("locality"),
+                address=data.get("address"),
+                city=data.get("city"),
+                state=data.get("state"),
+                landmark=data.get("landmark"),
+                altphone=data.get("altphone"),
             )
-            db.session.add(order_item)
+            db.session.add(order)
+            db.session.commit()
 
-        # clear cart
+            # Add order items
+            for item in items:
+                order_item = OrderItem(
+                    order_id=order.id,
+                    product_id=item.product_id,
+                    quantity=item.count,
+                    price=item.product.price,
+                )
+                db.session.add(order_item)
+
+            created_orders.append(order.to_dict())
+
+        # 3. Clear the user's cart
         Cart.query.filter_by(user_id=user_id).delete()
         db.session.commit()
 
-        return order.to_dict(), 201
+        return {"orders": created_orders}, 201
+
     except Exception as e:
         db.session.rollback()
         return {"error": str(e)}, 500
+
 
 
 #  Buyer: get all orders for a user

@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request,jsonify
 from extensions import db
 from models.cart import Cart
 from models.product import Product
@@ -10,6 +10,40 @@ cart_bp = Blueprint("cart_bp", __name__)
 def get_cart(user_id):
     cart_items = [c.to_dict() for c in Cart.query.filter_by(user_id=user_id).all()]
     return cart_items, 200
+
+
+#cartcount
+# @cart_bp.get("/cartcount/<int:user_id>")
+# def get_cart1(user_id):
+#     try:
+#         cart_items = (
+#             db.session.query(Cart, Product)
+#             .join(Product, Cart.product_id == Product.id)
+#             .filter(Cart.user_id == user_id)
+#             .all()
+#         )
+
+#         result = []
+#         for cart, product in cart_items:
+#             result.append(
+#                 {
+#                     "id": cart.id,
+#                     "product_id": cart.product_id,
+#                     "count": cart.count,
+#                     "product": {
+#                         "name": product.name,
+#                         "price": product.price,
+#                         "image": getattr(product, "image", None),
+#                     },
+#                 }
+#             )
+
+#         return jsonify({"cart": result}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+
+
 
 
 # ✅ POST add item to cart
